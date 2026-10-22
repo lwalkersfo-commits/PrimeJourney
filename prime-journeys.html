@@ -1,0 +1,310 @@
+<title>Prime Journeys</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Lexend:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: projector-first two-panel board — prime counter columns (left) and the step staircase (right); stacks to one column on phones. */
+:root{
+  --purple:#5C2D91; --purple-ink:#ffffff; --lav:#EDE6F6; --lav-line:#cfc0e6;
+  --green:#2E7D46; --green-bg:#DFF2E3; --amber:#C77C02; --amber-bg:#FFF4DD; --amber-dot:#F2A93B;
+  --bg:#F7F5FA; --panel:#ffffff; --ink:#1f1830; --muted:#625a73; --line:#ddd6e8; --empty:#e9e4f1;
+  --display:"Bricolage Grotesque", "Lexend", system-ui, sans-serif;
+  --body:"Lexend", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --purple:#9B6FD6; --purple-ink:#140b22; --lav:#2a2140; --lav-line:#43375e;
+  --green:#6FCF8E; --green-bg:#173323; --amber:#F2B24D; --amber-bg:#3a2c12; --amber-dot:#F2A93B;
+  --bg:#141019; --panel:#1d1726; --ink:#eee9f6; --muted:#a79fb8; --line:#352c45; --empty:#2c2438; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --purple:#9B6FD6; --purple-ink:#140b22; --lav:#2a2140; --lav-line:#43375e;
+  --green:#6FCF8E; --green-bg:#173323; --amber:#F2B24D; --amber-bg:#3a2c12; --amber-dot:#F2A93B;
+  --bg:#141019; --panel:#1d1726; --ink:#eee9f6; --muted:#a79fb8; --line:#352c45; --empty:#2c2438; color-scheme:dark;}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 32px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.brand{display:flex;flex-direction:column}
+.brand small{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.brand h1{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(24px,3vw,32px);color:var(--purple);text-wrap:balance}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+select,button{font:inherit}
+.seg{display:flex;border:2px solid var(--purple);border-radius:10px;overflow:hidden}
+.seg button{border:0;background:var(--panel);color:var(--purple);padding:8px 12px;font-weight:600;cursor:pointer;min-height:40px}
+.seg button[aria-pressed="true"]{background:var(--purple);color:var(--purple-ink)}
+.btn{border:2px solid var(--purple);background:var(--panel);color:var(--purple);border-radius:10px;padding:8px 14px;font-weight:600;cursor:pointer;min-height:40px}
+.btn.primary{background:var(--purple);color:var(--purple-ink)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+button:focus-visible{outline:3px solid var(--amber-dot);outline-offset:2px}
+
+.journey{background:var(--purple);color:var(--purple-ink);border-radius:16px;padding:14px 20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.route{display:flex;align-items:center;gap:14px;font-family:var(--display);font-weight:800}
+.route .num{font-size:clamp(40px,7vw,72px);line-height:1;font-variant-numeric:tabular-nums}
+.route .arrow{font-size:clamp(28px,4vw,44px);opacity:.8}
+.route .lbl{display:block;font-family:var(--body);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;opacity:.8}
+.rule{font-size:15px;max-width:42ch;opacity:.95}
+
+.app{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:880px){.app{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;min-width:0}
+.panel h2{margin:0 0 10px;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+
+.now{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 16px;margin-bottom:12px}
+.now .big{font-family:var(--display);font-weight:800;font-size:clamp(36px,5vw,52px);color:var(--purple);font-variant-numeric:tabular-nums;line-height:1}
+.now .facts{font-size:18px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+.board{display:flex;justify-content:center;gap:clamp(6px,1.6vw,18px);overflow-x:auto;padding:4px 2px}
+.col{display:flex;flex-direction:column;align-items:center;gap:6px}
+.op{width:clamp(44px,8vw,64px);min-height:40px;border-radius:10px;border:2px solid var(--purple);background:var(--panel);color:var(--purple);font-weight:700;font-size:clamp(15px,2vw,19px);cursor:pointer;font-variant-numeric:tabular-nums}
+.op.div{border-style:dashed}
+.op:hover:not(:disabled){background:var(--lav)}
+.op:disabled{opacity:.35;cursor:not-allowed}
+.stack{display:flex;flex-direction:column-reverse;gap:clamp(4px,.8vw,8px);padding:6px 0}
+.dot{width:clamp(28px,5.4vw,46px);aspect-ratio:1;max-width:100%;border-radius:50%;background:var(--empty);border:2px solid transparent;transition:background .2s,border-color .2s,transform .2s}
+.dot.on{background:var(--purple)}
+.dot.extra{background:var(--amber-dot)}
+.dot.need{background:transparent;border:3px dashed var(--green)}
+.dot.pop{animation:pop .3s ease}
+@keyframes pop{50%{transform:scale(1.18)}}
+.plabel{width:clamp(44px,8vw,64px);text-align:center;background:var(--lav);border:2px solid var(--lav-line);border-radius:8px;font-family:var(--display);font-weight:800;font-size:clamp(20px,3vw,28px);color:var(--ink);padding:2px 0}
+.axis{display:flex;justify-content:center;gap:24px;font-size:13px;color:var(--muted);margin-top:8px;flex-wrap:wrap}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;justify-content:center;margin-top:10px;font-size:14px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:16px;height:16px;border-radius:50%;display:inline-block}
+
+.msg{margin-top:12px;border-radius:12px;padding:10px 14px;font-size:16px;min-height:46px;display:flex;align-items:center;gap:10px}
+.msg.tip{background:var(--amber-bg);border:2px solid var(--amber);color:var(--ink)}
+.msg.win{background:var(--green-bg);border:2px solid var(--green);color:var(--ink)}
+.msg.info{background:var(--lav);border:2px solid var(--lav-line)}
+.msg b{font-weight:700}
+
+.toggles{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:12px;font-size:14px;color:var(--muted)}
+.toggles label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.toggles input{width:18px;height:18px;accent-color:var(--purple)}
+
+.chain{display:flex;flex-direction:column;gap:2px;max-height:560px;overflow:auto;padding:4px 4px 8px}
+.row{display:grid;grid-template-columns:64px 1fr;align-items:center}
+.chip{justify-self:start;font-weight:700;font-size:18px;color:var(--purple);border:2px solid var(--purple);border-right:0;border-radius:8px 0 0 8px;padding:2px 8px;background:var(--lav);font-variant-numeric:tabular-nums}
+.box{justify-self:start;min-width:96px;text-align:center;font-family:var(--display);font-weight:800;font-size:26px;border:2px solid var(--ink);border-radius:6px;padding:2px 14px;background:var(--panel);font-variant-numeric:tabular-nums}
+.row.step .box{margin-left:18px}
+.box.start{background:var(--lav);border-color:var(--purple)}
+.box.goal{background:var(--green-bg);border-color:var(--green);color:var(--ink)}
+.box.ghost{border-style:dashed;border-color:var(--green);color:var(--green);background:transparent}
+.row.enter{animation:slide .25s ease}
+@keyframes slide{from{opacity:.2;transform:translateY(-6px)}}
+.tally{margin-top:10px;font-size:15px;color:var(--muted);font-variant-numeric:tabular-nums}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+
+.teacher{font-size:15px;color:var(--muted)}
+.teacher details{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.teacher summary{cursor:pointer;font-weight:600;color:var(--ink)}
+.teacher ul{margin:8px 0 0;padding-left:20px;max-width:75ch}
+.teacher li{margin-bottom:6px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand"><small>Pix Brook Academy · Number</small><h1>Prime Journeys</h1></div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Level">
+        <button id="lv-foundation" data-level="foundation" aria-pressed="false">Foundation</button>
+        <button id="lv-core" data-level="core" aria-pressed="true">Core</button>
+        <button id="lv-stretch" data-level="stretch" aria-pressed="false">Stretch</button>
+      </div>
+      <button class="btn primary" id="newBtn">New journey</button>
+    </div>
+  </header>
+
+  <section class="journey" aria-live="polite">
+    <div class="route">
+      <div><span class="lbl">Start</span><span class="num" id="startNum">56</span></div>
+      <span class="arrow" aria-hidden="true">→</span>
+      <div><span class="lbl">Target</span><span class="num" id="targetNum">27</span></div>
+    </div>
+    <p class="rule" id="ruleText">Get from the start number to the target. Each step you may only multiply or divide by a prime: 2, 3, 5 or 7. Every answer must be a whole number.</p>
+  </section>
+
+  <div class="app">
+    <section class="panel" aria-label="Prime counter board">
+      <h2>Prime counter board</h2>
+      <div class="now"><span class="big" id="nowNum">56</span><span class="facts" id="nowFacts">= 2 × 2 × 2 × 7</span></div>
+      <div class="board" id="board"></div>
+      <div class="axis"><span>Top button: multiply (adds a counter)</span><span>Bottom button: divide (removes one)</span></div>
+      <div class="legend" id="legend">
+        <span><i style="background:var(--purple)"></i>keep</span>
+        <span><i style="background:var(--amber-dot)"></i>too many: divide</span>
+        <span><i style="border:3px dashed var(--green)"></i>missing: multiply</span>
+      </div>
+      <div class="msg info" id="msg" role="status">Tap a button to multiply or divide by that prime.</div>
+      <div class="toggles">
+        <label><input type="checkbox" id="tgShowTarget" checked> Show target on board</label>
+        <label><input type="checkbox" id="tgFacts" checked> Show prime factors</label>
+        <label><input type="checkbox" id="tgRelay"> Relay (target becomes next start)</label>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="Your steps">
+      <h2>Your steps</h2>
+      <div class="chain" id="chain"></div>
+      <div class="tally" id="tally"></div>
+      <div class="actions">
+        <button class="btn" id="undoBtn">Undo</button>
+        <button class="btn" id="resetBtn">Start again</button>
+        <button class="btn" id="showBtn">Show me a route</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="teacher">
+    <details>
+      <summary>Teacher notes</summary>
+      <ul>
+        <li>Each column counts how many times that prime is in the number. Multiplying by 3 adds a counter to the 3 column; dividing by 3 removes one. You can only divide if there is a counter to remove, so the board shows why 56 ÷ 3 fails.</li>
+        <li>Start and target numbers are never prime. Numbers on the way can be anything, including 1 and primes (56 → 8 → 4 → 2 → 1 → 3 → 9 → 27).</li>
+        <li>Fewest steps = counters to remove + counters to add. Ask pupils to predict it before they start.</li>
+        <li>Fade the scaffold: untick "Show target on board", then "Show prime factors", then hide the board and do it on mini-whiteboards.</li>
+        <li>Relay mode chains journeys like 56 → 27 → 63 → 48.</li>
+      </ul>
+    </details>
+  </div>
+</div>
+
+<script>
+const LEVELS={
+  foundation:{primes:[2,3,5],max:60,minS:2,maxS:4},
+  core:{primes:[2,3,5,7],max:100,minS:3,maxS:6},
+  stretch:{primes:[2,3,5,7,11,13],max:200,minS:4,maxS:8}
+};
+const H=7, CAP=1000;
+const S={level:'core',start:56,target:27,steps:[],done:false,anim:false,showTarget:true,facts:true,relay:false,lastPop:null};
+
+const $=id=>document.getElementById(id);
+function isPrime(n){if(n<2)return false;for(let i=2;i*i<=n;i++)if(n%i===0)return false;return true}
+function factor(n,primes){const e={};for(const p of primes){e[p]=0;while(n%p===0){n/=p;e[p]++}}return n===1?e:null}
+function primesOf(){return LEVELS[S.level].primes}
+function dist(a,b){return primesOf().reduce((s,p)=>s+Math.abs(a[p]-b[p]),0)}
+function curValue(){return S.steps.length?S.steps[S.steps.length-1].val:S.start}
+function factString(n){if(n===1)return '= 1';const out=[];for(const p of primesOf()){let m=n;while(m%p===0){out.push(p);m/=p}}return out.length>1?'= '+out.join(' × '):'(prime)'}
+function listPrimes(ps){return ps.length===1?ps[0]:ps.slice(0,-1).join(', ')+' or '+ps[ps.length-1]}
+
+function pool(){const L=LEVELS[S.level],a=[];for(let n=4;n<=L.max;n++){if(isPrime(n))continue;const e=factor(n,L.primes);if(e&&L.primes.every(p=>e[p]<=H))a.push(n)}return a}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function newJourney(fromRelay){
+  const L=LEVELS[S.level],P=pool();
+  let start=(fromRelay&&P.includes(S.target))?S.target:pick(P);
+  const se=factor(start,L.primes);
+  let cands=P.filter(n=>n!==start&&(d=>d>=L.minS&&d<=L.maxS)(dist(se,factor(n,L.primes))));
+  if(!cands.length)cands=P.filter(n=>n!==start);
+  S.start=start;S.target=pick(cands);S.steps=[];S.done=false;S.lastPop=null;
+  setMsg('info','Tap a button to multiply or divide by that prime.');
+  render(true);
+}
+
+function setMsg(kind,html){const m=$('msg');m.className='msg '+kind;m.innerHTML=html}
+
+function apply(p,op,silent){
+  if(S.done&&!silent)return;
+  const v=curValue(),e=factor(v,primesOf());
+  if(op==='div'){
+    if(e[p]===0){setMsg('tip',`<span><b>${v} ÷ ${p}</b> is not a whole number. There are no ${p}s in ${v} to take away.</span>`);return false}
+    S.steps.push({p,op,val:v/p});
+  }else{
+    if(e[p]>=H||v*p>CAP){setMsg('tip',`<span>${v} × ${p} = ${v*p}. That is too big for this board. Try dividing first.</span>`);return false}
+    S.steps.push({p,op,val:v*p});
+  }
+  S.lastPop={p,op};
+  check();render();return true;
+}
+function check(){
+  const v=curValue();
+  const min=dist(factor(S.start,primesOf()),factor(S.target,primesOf()));
+  const n=S.steps.length;
+  if(v===S.target){
+    S.done=true;
+    const extra=n-min;
+    setMsg('win', extra===0
+      ? `<span><b>You reached ${S.target} in ${n} steps.</b> That is the fewest possible.</span>`
+      : `<span><b>You reached ${S.target} in ${n} steps.</b> It can be done in ${min}. Can you find a shorter route?</span>`);
+  }else if(S.lastPop){
+    const {p,op}=S.lastPop,prev=S.steps.length>1?S.steps[S.steps.length-2].val:S.start;
+    setMsg('info',`<span>${prev} ${op==='mul'?'×':'÷'} ${p} = <b>${v}</b></span>`);
+  }
+}
+function undo(){if(S.anim||!S.steps.length)return;S.steps.pop();S.done=false;S.lastPop=null;setMsg('info','Step undone.');render()}
+function reset(){if(S.anim)return;S.steps=[];S.done=false;S.lastPop=null;setMsg('info','Back to the start. Tap a button to multiply or divide.');render()}
+
+function route(){
+  const ps=primesOf(),a=factor(S.start,ps),b=factor(S.target,ps),r=[];
+  for(const p of [...ps].reverse())for(let i=b[p];i<a[p];i++)r.push([p,'div']);
+  for(const p of ps)for(let i=a[p];i<b[p];i++)r.push([p,'mul']);
+  return r;
+}
+function showMe(){
+  if(S.anim)return;
+  S.steps=[];S.done=false;S.lastPop=null;render();
+  const r=route();S.anim=true;lockUI(true);
+  const fast=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let i=0;
+  setMsg('info','<span>Divide out the primes you don’t need, then multiply in the ones you do.</span>');
+  const tick=()=>{
+    if(i>=r.length){S.anim=false;lockUI(false);render();return}
+    apply(r[i][0],r[i][1],true);i++;
+    setTimeout(tick,fast?150:900);
+  };
+  setTimeout(tick,fast?100:700);
+}
+function lockUI(on){['newBtn','undoBtn','resetBtn','showBtn'].forEach(id=>$(id).disabled=on)}
+
+function render(fresh){
+  const ps=primesOf(),v=curValue(),cur=factor(v,ps),tgt=factor(S.target,ps);
+  $('startNum').textContent=S.start;$('targetNum').textContent=S.target;
+  $('ruleText').textContent=`Get from the start number to the target. Each step you may only multiply or divide by a prime: ${listPrimes(ps)}. Every answer must be a whole number.`;
+  $('nowNum').textContent=v;
+  $('nowFacts').textContent=S.facts?factString(v):'';
+  $('legend').hidden=!S.showTarget;
+  // board
+  const board=$('board');board.innerHTML='';
+  for(const p of ps){
+    const col=document.createElement('div');col.className='col';
+    const up=document.createElement('button');up.className='op mul';up.id='mul-'+p;up.textContent='×'+p;up.setAttribute('aria-label','Multiply by '+p);
+    up.disabled=S.done||S.anim;up.onclick=()=>apply(p,'mul');
+    const st=document.createElement('div');st.className='stack';
+    for(let i=0;i<H;i++){
+      const d=document.createElement('div');d.className='dot';
+      if(i<cur[p]){d.classList.add(S.showTarget&&!S.done&&i>=tgt[p]?'extra':'on')}
+      else if(S.showTarget&&!S.done&&i<tgt[p]){d.classList.add('need')}
+      if(S.lastPop&&S.lastPop.p===p&&S.lastPop.op==='mul'&&i===cur[p]-1)d.classList.add('pop');
+      st.appendChild(d);
+    }
+    const lab=document.createElement('div');lab.className='plabel';lab.textContent=p;
+    const dn=document.createElement('button');dn.className='op div';dn.id='div-'+p;dn.textContent='÷'+p;dn.setAttribute('aria-label','Divide by '+p);
+    dn.disabled=S.done||S.anim;dn.onclick=()=>apply(p,'div');
+    col.append(up,st,lab,dn);board.appendChild(col);
+  }
+  // chain
+  const ch=$('chain');ch.innerHTML='';
+  const r0=document.createElement('div');r0.className='row';r0.innerHTML=`<span></span><span class="box start">${S.start}</span>`;ch.appendChild(r0);
+  S.steps.forEach((s,i)=>{
+    const r=document.createElement('div');r.className='row step'+(i===S.steps.length-1&&!fresh?' enter':'');
+    const goal=S.done&&i===S.steps.length-1;
+    r.innerHTML=`<span class="chip">${s.op==='mul'?'×':'÷'}${s.p}</span><span class="box${goal?' goal':''}">${s.val}</span>`;
+    ch.appendChild(r);
+  });
+  if(!S.done){const g=document.createElement('div');g.className='row step';g.innerHTML=`<span></span><span class="box ghost">${S.target}</span>`;ch.appendChild(g)}
+  ch.scrollTop=ch.scrollHeight;
+  $('tally').textContent=`Steps so far: ${S.steps.length}`;
+  $('undoBtn').disabled=S.anim||!S.steps.length;
+  $('showBtn').textContent=S.done?'Show the shortest route':'Show me a route';
+  $('newBtn').textContent=S.relay?`Next journey from ${S.target}`:'New journey';
+  document.querySelectorAll('.seg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.level===S.level)));
+}
+
+document.querySelectorAll('.seg button').forEach(b=>b.onclick=()=>{if(S.anim)return;S.level=b.dataset.level;newJourney(false)});
+$('newBtn').onclick=()=>{if(!S.anim)newJourney(S.relay)};
+$('undoBtn').onclick=undo;$('resetBtn').onclick=reset;$('showBtn').onclick=showMe;
+$('tgShowTarget').onchange=e=>{S.showTarget=e.target.checked;render(true)};
+$('tgFacts').onchange=e=>{S.facts=e.target.checked;render(true)};
+$('tgRelay').onchange=e=>{S.relay=e.target.checked;render(true)};
+render(true);
+</script>
